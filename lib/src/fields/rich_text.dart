@@ -4,7 +4,9 @@ import 'package:flutter_storyblok/src/utils.dart';
 /// Storyblok RichText serializer
 final class RichText {
   RichText.fromJson(Map<String, dynamic> json)
-      : content = List<JSONMap>.from(json['content']).map(RichTextContainer.fromJson).toList();
+      : content = List<JSONMap>.from(json['content'])
+            .map(RichTextContainer.fromJson)
+            .toList();
 
   final List<RichTextContainer> content;
 }
@@ -50,12 +52,16 @@ final class UnrecognizedRichTextContainer extends RichTextContainer {
 
 /// A text box
 /// Paragraph is both a Container and a Leaf since it can exist inside another Container e.g List
-final class RichTextContainerParagraph implements RichTextContainer, RichTextLeaf {
+final class RichTextContainerParagraph
+    implements RichTextContainer, RichTextLeaf {
   RichTextContainerParagraph({
     required this.content,
   });
-  factory RichTextContainerParagraph.fromJson(JSONMap json) => RichTextContainerParagraph(
-        content: List<JSONMap>.from(json["content"] ?? []).map(RichTextLeaf.fromJson).toList(),
+  factory RichTextContainerParagraph.fromJson(JSONMap json) =>
+      RichTextContainerParagraph(
+        content: List<JSONMap>.from(json["content"] ?? [])
+            .map(RichTextLeaf.fromJson)
+            .toList(),
       );
 
   /// Content of paragraph
@@ -68,9 +74,12 @@ final class RichTextContainerHeading implements RichTextContainer {
     required this.level,
     required this.content,
   });
-  factory RichTextContainerHeading.fromJson(JSONMap json) => RichTextContainerHeading(
+  factory RichTextContainerHeading.fromJson(JSONMap json) =>
+      RichTextContainerHeading(
         level: json["attrs"]["level"],
-        content: List<JSONMap>.from(json["content"]).map(RichTextLeaf.fromJson).toList(),
+        content: List<JSONMap>.from(json["content"])
+            .map(RichTextLeaf.fromJson)
+            .toList(),
       );
 
   /// Level of heading, H1-6
@@ -83,13 +92,18 @@ final class RichTextContainerHeading implements RichTextContainer {
 /// A code text box
 final class RichTextContainerCode implements RichTextContainer {
   RichTextContainerCode({required this.codeLanguage, required this.content});
-  factory RichTextContainerCode.fromJson(JSONMap json) => RichTextContainerCode(
-        codeLanguage: json["attrs"]["class"],
-        content: List<JSONMap>.from(json["content"]).map(RichTextLeaf.fromJson).toList(),
-      );
+  factory RichTextContainerCode.fromJson(JSONMap json) {
+    final attrs = json["attrs"];
+    return RichTextContainerCode(
+      codeLanguage: attrs == null ? null : attrs["class"],
+      content: List<JSONMap>.from(json["content"])
+          .map(RichTextLeaf.fromJson)
+          .toList(),
+    );
+  }
 
   /// Programming language of the code
-  final String codeLanguage;
+  final String? codeLanguage;
 
   /// Content of code
   final List<RichTextLeaf> content;
@@ -101,8 +115,11 @@ final class RichTextContainerLine implements RichTextContainer {}
 /// A quote text box
 final class RichTextContainerQuote implements RichTextContainer {
   RichTextContainerQuote({required this.content});
-  factory RichTextContainerQuote.fromJson(JSONMap json) => RichTextContainerQuote(
-        content: List<JSONMap>.from(json["content"]).map(RichTextLeaf.fromJson).toList(),
+  factory RichTextContainerQuote.fromJson(JSONMap json) =>
+      RichTextContainerQuote(
+        content: List<JSONMap>.from(json["content"])
+            .map(RichTextLeaf.fromJson)
+            .toList(),
       );
 
   /// Content of quote
@@ -112,11 +129,14 @@ final class RichTextContainerQuote implements RichTextContainer {
 /// An un/ordered list of Paragraphs
 final class RichTextContainerList implements RichTextContainer {
   RichTextContainerList({required this.rows, required this.isOrdered});
-  factory RichTextContainerList.fromJson(JSONMap json, {required bool isOrdered}) => RichTextContainerList(
+  factory RichTextContainerList.fromJson(JSONMap json,
+          {required bool isOrdered}) =>
+      RichTextContainerList(
         isOrdered: isOrdered,
         rows: List<JSONMap>.from(json["content"])
             // Each object is of type "list_item" which only ever contains a single Paragraph object named "content".
-            .map((e) => RichTextContainerParagraph.fromJson(JSONMap.from(e["content"][0])))
+            .map((e) => RichTextContainerParagraph.fromJson(
+                JSONMap.from(e["content"][0])))
             .toList(),
       );
 
@@ -170,7 +190,8 @@ final class UnrecognizedRichTextLeaf implements RichTextLeaf {
 //
 //
 
-final class RichTextLeafText extends RichTextLeafMarkable implements RichTextLeaf {
+final class RichTextLeafText extends RichTextLeafMarkable
+    implements RichTextLeaf {
   RichTextLeafText({required this.text, required super.marks});
   factory RichTextLeafText.fromJson(JSONMap json) => RichTextLeafText(
         text: json["text"],
@@ -181,7 +202,8 @@ final class RichTextLeafText extends RichTextLeafMarkable implements RichTextLea
   final String text;
 }
 
-final class RichTextLeafEmoji extends RichTextLeafMarkable implements RichTextLeaf {
+final class RichTextLeafEmoji extends RichTextLeafMarkable
+    implements RichTextLeaf {
   RichTextLeafEmoji({
     required this.name,
     required this.text,
@@ -191,7 +213,8 @@ final class RichTextLeafEmoji extends RichTextLeafMarkable implements RichTextLe
   factory RichTextLeafEmoji.fromJson(JSONMap json) => RichTextLeafEmoji(
         name: json["attrs"]["name"],
         text: json["attrs"]["emoji"],
-        fallback: mapIfNotNull(json["attrs"]["fallbackImage"] as String?, Uri.parse),
+        fallback:
+            mapIfNotNull(json["attrs"]["fallbackImage"] as String?, Uri.parse),
         marks: RichTextLeafMarkable.marksFromJson(json),
       );
 
@@ -206,7 +229,8 @@ final class RichTextLeafEmoji extends RichTextLeafMarkable implements RichTextLe
   final Uri? fallback;
 }
 
-final class RichTextLeafImage extends RichTextLeafMarkable implements RichTextLeaf {
+final class RichTextLeafImage extends RichTextLeafMarkable
+    implements RichTextLeaf {
   RichTextLeafImage({
     required this.id,
     required this.imageUrl,
@@ -295,7 +319,8 @@ final class RichTextLeafMarkCode implements RichTextLeafMark {}
 
 final class RichTextLeafMarkAnchor implements RichTextLeafMark {
   RichTextLeafMarkAnchor({required this.id});
-  factory RichTextLeafMarkAnchor.fromJson(JSONMap json) => RichTextLeafMarkAnchor(
+  factory RichTextLeafMarkAnchor.fromJson(JSONMap json) =>
+      RichTextLeafMarkAnchor(
         id: json["attrs"]["id"],
       );
   final String id;
@@ -311,7 +336,8 @@ final class RichTextLeafMarkLink implements RichTextLeafMark {
 
 final class RichTextLeafMarkTextStyle implements RichTextLeafMark {
   RichTextLeafMarkTextStyle({required this.colorString});
-  factory RichTextLeafMarkTextStyle.fromJson(JSONMap json) => RichTextLeafMarkTextStyle(
+  factory RichTextLeafMarkTextStyle.fromJson(JSONMap json) =>
+      RichTextLeafMarkTextStyle(
         colorString: json["attrs"]["color"],
       );
 
@@ -321,7 +347,8 @@ final class RichTextLeafMarkTextStyle implements RichTextLeafMark {
 
 final class RichTextLeafMarkHighlight implements RichTextLeafMark {
   RichTextLeafMarkHighlight({required this.colorString});
-  factory RichTextLeafMarkHighlight.fromJson(JSONMap json) => RichTextLeafMarkHighlight(
+  factory RichTextLeafMarkHighlight.fromJson(JSONMap json) =>
+      RichTextLeafMarkHighlight(
         colorString: json["attrs"]["color"],
       );
 
@@ -332,7 +359,9 @@ final class RichTextLeafMarkHighlight implements RichTextLeafMark {
 /// Base class of markable leaves
 base class RichTextLeafMarkable {
   static List<RichTextLeafMark> marksFromJson(JSONMap json) =>
-      List<JSONMap>.from(json["marks"] ?? []).map(RichTextLeafMark.fromJson).toList();
+      List<JSONMap>.from(json["marks"] ?? [])
+          .map(RichTextLeafMark.fromJson)
+          .toList();
 
   RichTextLeafMarkable({required List<RichTextLeafMark> marks})
       : isCode = marks.containsType<RichTextLeafMarkCode>(),
